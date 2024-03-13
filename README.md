@@ -29,6 +29,8 @@ Execute the following commands in the command line after connecting to the big-d
 ### **Part-1**
 #### **Mapper and Reducer application to calculate the average of wind direction (degree) for each observation month from each year from NCDC records (note: 999 indicates missing value, and [01459] indicate good quality value).**
 The python files for this part are available in Part-1 directory.
+Hadoop python Streaming is used in this part which allows you to use Python-programming language to write map and reduce functions, and then use these functions with Hadoop MapReduce framework.
+The Jar file used for hadoop python streaming is hadoop-streaming-2.7.3.jar which is provided in files above.
 
 Change the execution permission of the python files:
 ```bash
@@ -48,4 +50,125 @@ hdfs dfs -copyFromLocal Project_Data /home/23student23/input_project
 hdfs dfs -ls /home/23student23/input_project
 hdfs dfs -ls /home/23student23/input_project/Project_Data
  ```
+Execute the mapper and reducer using Hadoop streaming:
+```bash
+hadoop jar hadoop-streaming-2.7.3.jar -file /home/student23/avgwind_mapper.py
+-mapper /home/student23/avgwind_mapper.py -file /home/student23/avgwind_reducer.py
+-reducer /home/student23/avgwind_reducer.py
+-input /home/23student23/input_project/Project_Data/*/*
+-output /home/23student23/output_avgwind
+ ```
+Find and print out the final output in the console.
+```bash
+hdfs dfs -ls /home/23student23/output_avgwind
+hdfs dfs -cat /home/23student23/output_avgwind/part-00000
+```
+Output:
+
+![image](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/3e99f408-90b4-4ba4-a0c9-9b29ef660594)
+
+### **Part-2**
+#### **Python application that can be implemented in PySpark to calculate the range (the difference between max and min values) of sky ceiling height (meters) for each USAF weather station ID from NCDC records (note: 99999 indicates missing value, and [01459] indicate good quality value).**
+The python files for this part are available in Part-2 directory.
+Command to submit a PySpark application to a Spark cluster managed by YARN (Yet Another Resource Negotiator), which is a resource manager typically used with Hadoop.
+```bash
+spark-submit --master yarn range_pyspark.py
+```
+After successful execution the output file should be in output_range directory in hdfs.
+Printing the final output in the console:
+```bash
+hdfs dfs -cat /home/23student23/output_range/part-000**
+```
+Output:
+![image](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/4e8db52b-7aac-4dad-95ee-9edfc210ca85)
+
+### **Part-3**
+#### **Mapper and Reducer application to retrieve USAF weather station ID and visibility distance (meters) from NCDC records (note: 999999 indicates missing value, and [01459] indicate good quality value) **
+The python files for this part are available in Part-3 directory.
+Hadoop python Streaming is used in this part which allows you to use Python-programming language to write map and reduce functions, and then use these functions with Hadoop MapReduce framework.
+The Jar file used for hadoop python streaming is hadoop-streaming-2.7.3.jar which is provided in files above.
+
+Change the execution permission of the python files:
+```bash
+chmod +x distance_mapper.py
+chmod +x distance_reducer.py
+ ```
+The sample data to test the python files is available in test_sample.txt file.
+Test the two python files locally before running them using Hadoop:
+```bash
+cat project_sample.txt | /home/student23/distance_mapper.py
+cat project_sample.txt | /home/student23/distance_mapper.py | /home/student23/distance_reducer.py
+ ```
+Execute the mapper and reducer using Hadoop streaming:
+```bash
+hadoop jar hadoop-streaming-2.7.3.jar -file /home/student23/distance_mapper.py
+-mapper /home/student23/distance_mapper.py -file /home/student23/distance_reducer.py
+-reducer /home/student23/distance_reducer.py
+-input /home/23student23/input_project/Project_Data/*/*
+-output /home/23student23/output_distance
+ ```
+After successful execution the output file should be in output_distance directory in hdfs.
+Command to check the output file:
+```bash
+hdfs dfs -ls /home/23student23/output_distance
+```
+![image](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/9f76abcb-3394-4606-8088-8118ac7cc25f)
+
+The ouput data is stored in part-00000.txt file in output_distance directory.
+We use the data generated in part-00000.txt file for the part-4 process.
+
+### **Part-4**
+#### **Loading the data generated from part-3 into Pig and Hive to retrieve the range of visibility distance and average visibility distance for each USAF weather station ID.**
+
+Loading the data into Pig:
+```bash
+records = LOAD'/home/23student23/output_distance/part-00000'
+    AS (ID:chararray, distance:int);
+
+DUMP records;
+
+DESCRIBE records;
+```
+Getting the range of visibility distance for each USAF weather station ID.
+```bash
+range = FOREACH grouped_records GENERATE group AS ID,
+    (MAX(records.distance) - MIN(records.distance)) AS range;
+
+DUMP range;
+```
+Output:
+![image](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/85d50d16-6e8d-474f-aa82-091b5b1f74b7)
+
+Creating a Table in Hive:
+```bash
+DROP TABLE IF EXISTS project_records23;
+
+CREATE TABLE project_records23 (Id STRING, distance INT)
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '\t';
+```
+Loading the data into the table:
+```bash
+LOAD DATA LOCAL INPATH 'output_distance/part-00000'
+OVERWRITE INTO TABLE project_records23;
+```
+Retreiving the top-20 rows:
+```bash
+select * from project_records23
+limit 20;
+```
+Getting the average visibility distance for each USAF weather station ID.
+```bash
+SELECT Id, Avg(distance)
+FROM project_records23
+GROUP BY Id;
+```
+Output:
+![image](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/83379e65-683a-4613-9807-1c1f0b7dbcfe)
+
+## **Contributors**
+- Sai Harsha Vardhan Reddy, Kolan- skolan@horizon.csueastbay.edu, harsha62334@gmail.com
+
+Thanks for reading!
+
 
