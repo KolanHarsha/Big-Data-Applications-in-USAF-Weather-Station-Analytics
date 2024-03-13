@@ -1,0 +1,17 @@
+records = LOAD'/home/23student23/output_distance/part-00000'
+    AS (ID:chararray, distance:int);
+
+DUMP records;
+
+DESCRIBE records;
+
+grouped_records = GROUP records BY ID;
+
+DUMP grouped_records;
+
+DESCRIBE grouped_records;
+
+range = FOREACH grouped_records GENERATE group AS ID,
+    (MAX(records.distance) - MIN(records.distance)) AS range;
+
+DUMP range;

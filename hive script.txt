@@ -1,0 +1,18 @@
+
+DROP TABLE IF EXISTS project_records23;
+
+CREATE TABLE project_records23 (Id STRING, distance INT)
+ROW FORMAT DELIMITED
+  FIELDS TERMINATED BY '\t';
+
+LOAD DATA LOCAL INPATH 'output_distance/part-00000'
+OVERWRITE INTO TABLE project_records23;
+
+select * from project_records23
+limit 20;
+
+SELECT Id, Avg(distance)
+FROM project_records23
+GROUP BY Id;
+
+
