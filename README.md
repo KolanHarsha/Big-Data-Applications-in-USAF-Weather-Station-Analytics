@@ -7,8 +7,7 @@ This project demonstrates the use of big-data technologies in weather station an
 4. Loading the data generated from part-3 into hive and pig to retrieve the range of visibility distance for each USAF weather station ID.
 
 ## **Data-Overview**
-The project utilizes records from the National Climatic Data Center (NCDC) spanning the years 1921 to 1930. The sample data of these records is available in the test_sample.txt file.
-The data-format of these records is shown below
+The project utilizes records from the National Climatic Data Center (NCDC) spanning the years 1921 to 1930. The sample data of these records is available in the test_sample.txt file.The data-format of these records is shown below
 ![WhatsApp Image 2024-03-13 at 1 34 08 PM](https://github.com/KolanHarsha/Big-Data-Applications-in-USAF-Weather-Station-Analytics/assets/110462466/05c9f1f6-e811-42b7-b2b0-4bfa5e60308c)
 
 ## **Softwares**
